@@ -251,6 +251,30 @@ streams:
     );
   });
 
+  test('explicitly quoted camelCase identifiers are preserved', () {
+    expect(
+      syncRulesToSyncStreams('''
+bucket_definitions:
+  user_lists:
+    parameters: SELECT request.user_id() as userId
+    data:
+      - SELECT * FROM "userLists" WHERE "userLists"."ownerId" = bucket.userId
+'''),
+      '''
+config:
+  edition: 3
+streams:
+  # This Sync Stream has been translated from bucket definitions. There may be more efficient ways to express these queries.
+  # You can add additional queries to this list if you need them.
+  # For details, see the documentation: https://docs.powersync.com/sync/streams/overview
+  migrated_to_streams:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM "userLists" WHERE "userLists"."ownerId" = auth.user_id()
+''',
+    );
+  });
+
   test('SQL keywords used as identifiers are quoted', () {
     expect(
       syncRulesToSyncStreams('''
