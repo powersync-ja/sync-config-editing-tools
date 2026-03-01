@@ -1,19 +1,33 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
 
-/// Variant of [NodeSqlBuilder] that properly generates schema names in function
-/// calls.
+/// An implementation of [NodeSqlBuilder] that preserves quotes around
+/// identifiers to ensure they're correctly parsed by the sync service.
 final class FixedNodeToSql extends NodeSqlBuilder {
   @override
-  void visitFunction(FunctionExpression e, void arg) {
-    if (e.schemaName != null) {
-      identifier(e.schemaName!, spaceAfter: false);
-      symbol('.');
+  void identifier(
+    String identifier, {
+    IdentifierToken? fromToken,
+    bool spaceBefore = true,
+    bool spaceAfter = true,
+  }) {
+    // The sync service parses identifiers as lowercase if they're not wrapped
+    // in double quotes. For this reason, we want to preserve double quotes from
+    // the source SQL statement.
+    if (fromToken != null && fromToken.escaped) {
+      return symbol(
+        '"$identifier"',
+        spaceBefore: spaceBefore,
+        spaceAfter: spaceAfter,
+      );
     }
-    identifier(e.name);
-    symbol('(');
-    visit(e.parameters, arg);
-    symbol(')', spaceAfter: true);
+
+    return super.identifier(
+      identifier,
+      fromToken: fromToken,
+      spaceBefore: spaceBefore,
+      spaceAfter: spaceAfter,
+    );
   }
 
   static String toSql(AstNode node) {

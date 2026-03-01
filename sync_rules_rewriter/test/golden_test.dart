@@ -226,4 +226,124 @@ streams:
 ''',
     );
   });
+
+  group('quoted identifiers', () {
+    test('are preserved', () {
+      expect(
+        syncRulesToSyncStreams('''
+bucket_definitions:
+  a:
+    data:
+      - SELECT "userLists"."order" FROM "userLists"
+'''),
+        contains('SELECT "userLists"."order" FROM "userLists"'),
+      );
+    });
+
+    test('mixed', () {
+      expect(
+        syncRulesToSyncStreams('''
+bucket_definitions:
+  a:
+    data:
+      - SELECT "userLists".ownerId FROM "userLists"
+'''),
+        contains('SELECT "userLists".ownerId FROM "userLists"'),
+      );
+    });
+
+    test('with schema reference', () {
+      expect(
+        syncRulesToSyncStreams('''
+bucket_definitions:
+  a:
+    data:
+      - SELECT "other"."userLists"."ownerId" FROM "other"."userLists"
+'''),
+        contains(
+          'SELECT "other"."userLists"."ownerId" FROM "other"."userLists"',
+        ),
+      );
+    });
+
+    test('with alias on table', () {
+      expect(
+        syncRulesToSyncStreams('''
+bucket_definitions:
+  a:
+    data:
+      - SELECT "BarBaz".id FROM items AS "BarBaz"
+'''),
+        contains('SELECT "BarBaz".id FROM items AS "BarBaz"'),
+      );
+    });
+
+    test('with alias on column', () {
+      expect(
+        syncRulesToSyncStreams('''
+bucket_definitions:
+  a:
+    data:
+      - SELECT id AS "CreatedAt" FROM lists
+'''),
+        contains('SELECT id AS "CreatedAt" FROM lists'),
+      );
+    });
+
+    test('on reference in where clause', () {
+      expect(
+        syncRulesToSyncStreams('''
+bucket_definitions:
+  a:
+    data:
+      - SELECT "ownerId" FROM lists WHERE "ownerId" = 1
+'''),
+        contains('SELECT "ownerId" FROM lists WHERE "ownerId" = 1'),
+      );
+    });
+
+    test('on star column', () {
+      expect(
+        syncRulesToSyncStreams('''
+bucket_definitions:
+  a:
+    data:
+      - SELECT "BarBaz".* FROM items AS "BarBaz"
+'''),
+        contains('SELECT "BarBaz".* FROM items AS "BarBaz"'),
+      );
+    });
+
+    test('remain quoted when default table is injected', () {
+      expect(
+        syncRulesToSyncStreams('''
+bucket_definitions:
+  a:
+    parameters:
+      - SELECT id AS list_id FROM lists
+    data:
+      - SELECT "OwnerId" FROM "Items" AS "BarBaz" WHERE "OwnerId" = bucket.list_id
+'''),
+        contains(
+          '"SELECT \\"BarBaz\\".\\"OwnerId\\" FROM \\"Items\\" AS \\"BarBaz\\",a_param AS bucket WHERE \\"BarBaz\\".\\"OwnerId\\" = bucket.list_id"',
+        ),
+      );
+    });
+
+    test('remain quoted when * is injected', () {
+      expect(
+        syncRulesToSyncStreams('''
+bucket_definitions:
+  a:
+    parameters:
+      - SELECT id AS list_id FROM lists
+    data:
+      - SELECT * FROM items AS "BarBaz" WHERE id = bucket.list_id
+'''),
+        contains(
+          '"SELECT \\"BarBaz\\".* FROM items AS \\"BarBaz\\",a_param AS bucket WHERE \\"BarBaz\\".id = bucket.list_id"',
+        ),
+      );
+    });
+  });
 }

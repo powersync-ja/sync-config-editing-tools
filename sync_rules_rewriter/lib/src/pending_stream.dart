@@ -93,7 +93,7 @@ final class TranslationContext {
 
       for (final column in columns) {
         if (column is ExpressionResultColumn) {
-          var name = (column.as ?? column.expression.resultColumnName)
+          var name = (column.as?.name ?? column.expression.resultColumnName)
               .toLowerCase();
           instantiation[name] = column.expression;
         }
@@ -133,7 +133,7 @@ final class TranslationContext {
   }
 
   AstNode _parse(FileSpan span) {
-    final parsed = _engine.parseSpan(span);
+    final parsed = _engine.parseSpan(ParserEntrypoint.statement, span);
     for (final error in parsed.errors) {
       messages.add(DiagnosticMessage(error.token.span, error.message));
     }
@@ -143,7 +143,7 @@ final class TranslationContext {
 
 final class _ToStreamTranslator extends Transformer<void> {
   final TranslationContext stream;
-  String? defaultTableName;
+  (String, IdentifierToken?)? defaultTableName;
   bool isDataQuery;
 
   final int parameterQueryCount;
@@ -170,7 +170,8 @@ final class _ToStreamTranslator extends Transformer<void> {
   @override
   AstNode? visitStarResultColumn(StarResultColumn e, void arg) {
     if (e.tableName == null) {
-      return StarResultColumn(defaultTableName);
+      return StarResultColumn(defaultTableName?.$1)
+        ..tableNameToken = defaultTableName?.$2;
     }
 
     return e;
@@ -179,7 +180,10 @@ final class _ToStreamTranslator extends Transformer<void> {
   @override
   AstNode? visitReference(Reference e, void arg) {
     if (e.entityName == null) {
-      return Reference(columnName: e.columnName, entityName: defaultTableName);
+      final (tableName, tableNameToken) = defaultTableName ?? (null, null);
+      return Reference(columnName: e.columnName, entityName: tableName)
+        ..columnNameToken = e.columnNameToken
+        ..entityNameToken = tableNameToken;
     }
 
     return e;
@@ -187,7 +191,7 @@ final class _ToStreamTranslator extends Transformer<void> {
 
   @override
   AstNode? visitExpressionResultColumn(ExpressionResultColumn e, void arg) {
-    if (e.as == '_priority') {
+    if (e.as case AliasClause(name: '_priority')) {
       if (e.expression case NumericLiteral(isInt: true, :final value)) {
         stream.priority = min(stream.priority, value.toInt());
       }
@@ -203,7 +207,14 @@ final class _ToStreamTranslator extends Transformer<void> {
     // Join CTEs for parameter queries to main statement
     if (parameterQueryCount > 0 && e.from is TableReference) {
       final tableReference = e.from as TableReference;
-      defaultTableName = tableReference.as ?? tableReference.tableName;
+      if (tableReference.as case final alias?) {
+        defaultTableName = (alias.name, alias.nameToken);
+      } else {
+        defaultTableName = (
+          tableReference.tableName,
+          tableReference.tableNameToken,
+        );
+      }
 
       e.from = JoinClause(
         primary: tableReference,
@@ -217,7 +228,7 @@ final class _ToStreamTranslator extends Transformer<void> {
                   parameterQueryCount,
                   i,
                 ),
-                as: _parameterAliasName(parameterQueryCount, i),
+                as: AliasClause(_parameterAliasName(parameterQueryCount, i)),
               ),
             ),
         ],
