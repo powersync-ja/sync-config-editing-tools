@@ -16,7 +16,7 @@ final class FixedNodeToSql extends NodeSqlBuilder {
     // the source SQL statement.
     if (fromToken != null && fromToken.escaped) {
       return symbol(
-        '"$identifier"',
+        escapeIdentifier(identifier),
         spaceBefore: spaceBefore,
         spaceAfter: spaceAfter,
       );
