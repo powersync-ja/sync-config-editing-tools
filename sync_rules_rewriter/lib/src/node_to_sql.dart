@@ -30,6 +30,28 @@ final class FixedNodeToSql extends NodeSqlBuilder {
     );
   }
 
+  @override
+  void visitBinaryExpression(BinaryExpression e, void arg) {
+    // Rewrite `auth.parameters() ->> 'x'` to `auth.parameter('x')`.
+    if (e.left case FunctionExpression(
+      name: 'parameters',
+      schemaName: final schema?,
+    )) {
+      if (e.right case final StringLiteral right) {
+        return super.visitFunction(
+          FunctionExpression(
+            name: 'parameter',
+            schemaName: schema,
+            parameters: ExprFunctionParameters(parameters: [right]),
+          ),
+          arg,
+        );
+      }
+    }
+
+    super.visitBinaryExpression(e, arg);
+  }
+
   static String toSql(AstNode node) {
     final builder = FixedNodeToSql();
     builder.visit(node, null);

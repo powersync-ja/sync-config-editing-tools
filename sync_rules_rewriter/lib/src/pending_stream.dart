@@ -135,6 +135,12 @@ final class TranslationContext {
   AstNode _parse(FileSpan span) {
     final parsed = _engine.parseSpan(ParserEntrypoint.statement, span);
     for (final error in parsed.errors) {
+      if (error.message == 'Expected a result column here.') {
+        // We have a select statement like SELECT FROM table, without result
+        // columns. That's not valid, but the sync service accepts it anyway.
+        continue;
+      }
+
       messages.add(DiagnosticMessage(error.token.span, error.message));
     }
     return parsed.rootNode;
@@ -273,7 +279,11 @@ final class _ToStreamTranslator extends Transformer<void> {
 
   List<Expression>? _expandBucketReference(Expression e) {
     if (isDataQuery) {
-      if (e case Reference(:final columnName, entityName: 'bucket')) {
+      if (e case Reference(
+        :final columnName,
+        :final columnNameToken,
+        entityName: 'bucket',
+      )) {
         return [
           if (stream.trivialParameters[e.columnName.toLowerCase()]
               case final instantiation?)
@@ -283,7 +293,7 @@ final class _ToStreamTranslator extends Transformer<void> {
             Reference(
               columnName: columnName,
               entityName: _parameterAliasName(parameterQueryCount, i),
-            ),
+            )..columnNameToken = columnNameToken,
         ];
       }
     }

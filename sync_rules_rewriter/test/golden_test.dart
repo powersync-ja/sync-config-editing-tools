@@ -227,6 +227,47 @@ streams:
     );
   });
 
+  test('uses simplified parameter syntax', () {
+    expect(
+      syncRulesToSyncStreams('''
+bucket_definitions:
+  lists:
+    parameters:
+      - SELECT request.jwt() ->> 'uid' AS user_id
+    data:
+      - SELECT * FROM lists WHERE owner = bucket.user_id
+'''),
+      contains("SELECT * FROM lists WHERE owner = auth.parameter('uid')"),
+    );
+  });
+
+  test('supports query without column', () {
+    expect(
+      syncRulesToSyncStreams('''
+bucket_definitions:
+  admin_data:
+    parameters:
+      - SELECT FROM users WHERE id = request.jwt() ->> 'uid' AND is_admin
+    data:
+      - SELECT * FROM notes
+'''),
+      '''
+config:
+  edition: 3
+streams:
+  # This Sync Stream has been translated from bucket definitions. There may be more efficient ways to express these queries.
+  # You can add additional queries to this list if you need them.
+  # For details, see the documentation: https://docs.powersync.com/sync/streams/overview
+  migrated_to_streams:
+    auto_subscribe: true
+    with:
+      admin_data_param: SELECT FROM users WHERE id = auth.parameter('uid') AND is_admin
+    queries:
+      - "SELECT notes.* FROM notes,admin_data_param AS bucket"
+''',
+    );
+  });
+
   group('quoted identifiers', () {
     test('are preserved', () {
       expect(
@@ -342,6 +383,38 @@ bucket_definitions:
 '''),
         contains(
           '"SELECT \\"BarBaz\\".* FROM items AS \\"BarBaz\\",a_param AS bucket WHERE \\"BarBaz\\".id = bucket.list_id"',
+        ),
+      );
+    });
+
+    test('for implicit bucket alias', () {
+      expect(
+        syncRulesToSyncStreams('''
+bucket_definitions:
+  a:
+    parameters:
+      - SELECT "orgId" FROM orgs WHERE owner = request.user_id()
+    data:
+      - SELECT * FROM items WHERE org = bucket."orgId"
+'''),
+        contains(
+          '"SELECT items.* FROM items,a_param AS bucket WHERE items.org = bucket.\\"orgId\\"',
+        ),
+      );
+    });
+
+    test('for explicit bucket alias', () {
+      expect(
+        syncRulesToSyncStreams('''
+bucket_definitions:
+  a:
+    parameters:
+      - SELECT id AS "orgId" FROM orgs WHERE owner = request.user_id()
+    data:
+      - SELECT * FROM items WHERE org = bucket."orgId"
+'''),
+        contains(
+          '"SELECT items.* FROM items,a_param AS bucket WHERE items.org = bucket.\\"orgId\\"',
         ),
       );
     });
