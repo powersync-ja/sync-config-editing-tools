@@ -1,14 +1,14 @@
 {
-  "name": "@powersync-community/sync-config-rewriter",
-  "version": "0.1.4",
+  "name": "@powersync/sync-config-tools",
+  "version": "0.1.0",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
-  "description": "Tools to rewrite Sync Configurations for PowerSync",
+  "description": "Editing tools for Sync Streams used by the PowerSync Dashboard and CLI.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/powersync-community/bucket-definitions-to-sync-streams.git"
+    "url": "git+https://github.com/powersync-ja/sync-config-editing-tools.git"
   },
   "type": "module",
   "files": ["lib"],

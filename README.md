@@ -1,18 +1,18 @@
-# Sync Rules bucket definitions to Sync Streams
+## Sync Config tools
 
-This tool converts Sync Rules using [bucket definitions](https://docs.powersync.com/sync/rules/organize-data-into-buckets)
-to [Sync Streams](https://docs.powersync.com/sync/streams/overview).
+This repository provides editing support for Sync Configurations (Sync Streams and legacy Sync Rules).
 
-Usage:
+At the moment, this contains a rewriter transforming Sync Rules into equivalent Sync Streams.
+In the future, we might add other tools like LSP-like editing services for Sync Streams as well.
 
-```shell
-dart run sync_rules_rewriter/bin/rewrite.dart < sync_rules.yaml
-```
+## Rewriter
 
-Alternatively, paste your Sync Rules into [this website](https://powersync-community.github.io/bucket-definitions-to-sync-streams/).
+To use the rewriter outside of the dashboard, use `dart run sync_config_tools/bin/rewrite.dart < /path/to/sync/rules.yaml`.
 
-## Structure
+The functionality is exposed as a Dart API under `package:sync_config_tools/sync_rules_to_sync_streams.dart`, but we don't currently publish that package to pub.dev.
 
-- `sync_rules_rewriter` is a Dart package responsible for the translation.
-- `website` is a standalone website with a small editor running the translation. View it locally by running `dart run webdev serve` in `website/`.
+## JavaScript package
 
+To be usable in the PowerSync dashboard and CLI, we compile editing tools to WebAssembly using `dart2wasm`.
+
+The outputs of that are wrapped in an ESM package under [`js-package`](./js-package/).

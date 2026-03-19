@@ -3,12 +3,11 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert";
 
-import { instantiate } from "@powersync-community/sync-config-rewriter";
+import { instantiate } from "@powersync/sync-config-tools";
 
 const wasmBuffer = readFileSync(
   fileURLToPath(
-    import.meta
-      .resolve("@powersync-community/sync-config-rewriter/compiled.wasm"),
+    import.meta.resolve("@powersync/sync-config-tools/compiled.wasm"),
   ),
 );
 

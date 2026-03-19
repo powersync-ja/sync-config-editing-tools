@@ -133,7 +133,7 @@ final class TranslationContext {
   }
 
   AstNode _parse(FileSpan span) {
-    final parsed = _engine.parseSpan(ParserEntrypoint.statement, span);
+    final parsed = _engine.parseSpan(.statement, span);
     for (final error in parsed.errors) {
       if (error.message == 'Expected a result column here.') {
         // We have a select statement like SELECT FROM table, without result
