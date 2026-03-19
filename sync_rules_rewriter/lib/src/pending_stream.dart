@@ -329,6 +329,7 @@ final _engine = SqlEngine(
   EngineOptions(
     version: SqliteVersion.current,
     supportSchemaInFunctionNames: true,
+    supportPostgresCasts: true,
   ),
 );
 

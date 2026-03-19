@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   sync_rules_rewriter:
-  jaspr: ^0.22.1
+  jaspr: ^0.22.4
   picocss:
     hosted: https://pub-simonbinder-eu.fsn1.your-objectstorage.com
     version: ^2.1.1
