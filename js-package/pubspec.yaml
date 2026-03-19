@@ -1,4 +1,4 @@
-name: rewriter_as_js_package
+name: tools_as_js_package
 description: .
 version: 0.0.1
 publish_to: none
@@ -9,5 +9,4 @@ environment:
 
 dependencies:
   source_span: ^1.10.2
-  sync_rules_rewriter:
-
+  sync_config_tools:

@@ -2,12 +2,11 @@ name: _workspace
 publish_to: none
 
 environment: 
-  sdk: ^3.10.0
+  sdk: ^3.11.0
 
 workspace:
- - sync_rules_rewriter
- - website
  - js-package
+ - sync_config_tools
 
 dev_dependencies:
   lints: ^6.0.0

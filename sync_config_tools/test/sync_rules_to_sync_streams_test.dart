@@ -1,4 +1,4 @@
-import 'package:sync_rules_rewriter/sync_rules_rewriter.dart';
+import 'package:sync_config_tools/sync_rules_to_sync_streams.dart';
 import 'package:test/test.dart';
 
 void main() {

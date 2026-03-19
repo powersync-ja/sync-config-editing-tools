@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:sync_rules_rewriter/sync_rules_rewriter.dart';
+import 'package:sync_config_tools/sync_rules_to_sync_streams.dart';
 
 /// Usage: `dart run bin/rewrite.dart < /path/to/sync/rules.yaml`.
 void main() async {

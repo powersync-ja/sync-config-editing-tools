@@ -2,23 +2,12 @@ name: build
 
 on:
   push:
-    branches: [ main ]
   pull_request:
 
 jobs:
-  dart:
+  test:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dart-lang/setup-dart@v1
-      - run: dart pub get
-      - run: dart format --output=none --set-exit-if-changed .
-      - run: dart analyze --fatal-warnings
-      - run: dart test
-        working-directory: sync_rules_rewriter
-
-  node:
-    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)  
     steps:
       - uses: actions/checkout@v6
       - uses: dart-lang/setup-dart@v1
@@ -27,6 +16,12 @@ jobs:
         with:
           node-version: latest
       - run: dart pub get
+
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: dart analyze --fatal-warnings
+      - run: dart test
+        working-directory: sync_config_tools
+
       - run: pnpm build
         working-directory: js-package
       - run: pnpm test

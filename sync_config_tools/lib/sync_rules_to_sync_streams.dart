@@ -32,16 +32,16 @@ String syncRulesToSyncStreams(String syncRules, {Uri? uri}) {
     }
 
     switch (node.style) {
-      case ScalarStyle.FOLDED:
+      case .FOLDED:
         return removePrefix('>');
-      case ScalarStyle.LITERAL:
+      case .LITERAL:
         return removePrefix('|');
-      case ScalarStyle.SINGLE_QUOTED:
+      case .SINGLE_QUOTED:
         return removeQuotes("'");
-      case ScalarStyle.DOUBLE_QUOTED:
+      case .DOUBLE_QUOTED:
         return removeQuotes('"');
-      case ScalarStyle.PLAIN:
-      case ScalarStyle.ANY:
+      case .PLAIN:
+      case .ANY:
       default:
         return all;
     }
@@ -171,12 +171,9 @@ String syncRulesToSyncStreams(String syncRules, {Uri? uri}) {
       if (hasStreamsInYaml) {
         editor.update(['streams', name], streamInYaml);
       } else {
-        editor.update(
-          ['streams'],
-          wrapAsYamlNode(collectionStyle: CollectionStyle.BLOCK, {
-            name: streamInYaml,
-          }),
-        );
+        editor.update([
+          'streams',
+        ], wrapAsYamlNode(collectionStyle: .BLOCK, {name: streamInYaml}));
         hasStreamsInYaml = true;
       }
     }
@@ -199,8 +196,7 @@ String _attachCommentsToRenderedYaml(
 
   if (parsed is YamlMap) {
     final loadedStreams = parsed['streams'];
-    if (loadedStreams is YamlMap &&
-        loadedStreams.style == CollectionStyle.BLOCK) {
+    if (loadedStreams is YamlMap && loadedStreams.style == .BLOCK) {
       streams = loadedStreams;
     }
   }

@@ -1,4 +1,4 @@
-name: sync_rules_rewriter
+name: sync_config_tools
 resolution: workspace
 publish_to: none
 
