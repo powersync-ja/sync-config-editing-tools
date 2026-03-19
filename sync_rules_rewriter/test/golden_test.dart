@@ -268,6 +268,20 @@ streams:
     );
   });
 
+  test('supports postgres casts', () {
+    expect(
+      syncRulesToSyncStreams('''
+bucket_definitions:
+  admin_data:
+    parameters:
+      - SELECT FROM users WHERE id::text = request.jwt() ->> 'uid'
+    data:
+      - SELECT * FROM notes
+'''),
+      contains('CAST(id AS text)'),
+    );
+  });
+
   group('quoted identifiers', () {
     test('are preserved', () {
       expect(
