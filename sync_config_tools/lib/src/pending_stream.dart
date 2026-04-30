@@ -269,9 +269,11 @@ final class _ToStreamTranslator extends Transformer<void> {
         }
       }
 
-      return replacementTerms.reduce(
-        (a, b) => BinaryExpression(a, Token(TokenType.or, e.span!), b),
-      );
+      if (replacementTerms.isNotEmpty) {
+        return replacementTerms.reduce(
+          (a, b) => BinaryExpression(a, Token(TokenType.or, e.span!), b),
+        );
+      }
     }
 
     return super.visitBinaryExpression(e, arg);
