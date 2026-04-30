@@ -71,3 +71,28 @@ bucket_definitions:
     internalMessage: "Translation failed due to errors in source.",
   });
 });
+
+test("handles errors in parameter query", async () => {
+  const module = await instantiate(wasmBuffer);
+
+  const source = `
+bucket_definitions:
+  by_building:
+    parameters:
+    - SELECT value AS group FROM json_each(request.jwt() -> 'groups')
+    data:
+    - SELECT * FROM tbl WHERE "group" = bucket."group"
+`;
+
+  assertEqual(module.syncRulesToSyncStreams(source), {
+    type: "error",
+    diagnostics: [
+      {
+        startOffset: 74,
+        length: 5,
+        message: "Expected an identifier (got keyword GROUP)",
+      },
+    ],
+    internalMessage: "Translation failed due to errors in source.",
+  });
+});
