@@ -90,7 +90,8 @@ bucket_definitions:
       {
         startOffset: 74,
         length: 5,
-        message: "Expected an identifier (got keyword GROUP)",
+        message:
+          "Expected an identifier (got keyword GROUP, try wrapping it in double quotes to escape it).",
       },
     ],
     internalMessage: "Translation failed due to errors in source.",
