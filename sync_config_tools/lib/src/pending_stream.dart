@@ -210,6 +210,18 @@ final class _ToStreamTranslator extends Transformer<void> {
 
   @override
   AstNode? visitSelectStatement(SelectStatement e, void arg) {
+    // In data queries, ensure a * column comes first. This ensures that
+    // explicit result columns take precedence (https://github.com/powersync-ja/powersync-service/pull/685).
+    if (isDataQuery) {
+      for (var i = 1; i < e.columns.length; i++) {
+        final column = e.columns[i];
+        if (column is StarResultColumn) {
+          e.columns.removeAt(i);
+          e.columns.insert(0, column);
+        }
+      }
+    }
+
     // Join CTEs for parameter queries to main statement
     if (parameterQueryCount > 0 && e.from is TableReference) {
       final tableReference = e.from as TableReference;

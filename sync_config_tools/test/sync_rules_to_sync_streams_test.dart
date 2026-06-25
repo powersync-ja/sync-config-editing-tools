@@ -268,6 +268,29 @@ streams:
     );
   });
 
+  test('puts star columns first', () {
+    expect(
+      syncRulesToSyncStreams('''
+bucket_definitions:
+  admin_data:
+    data:
+      - SELECT public_id as id, *, foo as bar FROM notes
+'''),
+      '''
+config:
+  edition: 3
+streams:
+  # This Sync Stream has been translated from bucket definitions. There may be more efficient ways to express these queries.
+  # You can add additional queries to this list if you need them.
+  # For details, see the documentation: https://docs.powersync.com/sync/streams/overview
+  migrated_to_streams:
+    auto_subscribe: true
+    queries:
+      - "SELECT *, public_id AS id, foo AS bar FROM notes"
+''',
+    );
+  });
+
   test('supports postgres casts', () {
     expect(
       syncRulesToSyncStreams('''
