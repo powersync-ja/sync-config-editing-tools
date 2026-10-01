@@ -241,6 +241,22 @@ bucket_definitions:
     );
   });
 
+  test('rewrites token_parameters use', () {
+    expect(
+      syncRulesToSyncStreams('''
+bucket_definitions:
+  lists:
+    parameters:
+      - SELECT token_parameters.user_id AS user_id, token_parameters.foo AS foo
+    data:
+      - SELECT * FROM lists WHERE owner = bucket.user_id AND foo = bucket.foo
+'''),
+      contains(
+        r"SELECT * FROM lists WHERE owner = auth.user_id() AND foo = auth.parameters() ->> '$.parameters.foo'",
+      ),
+    );
+  });
+
   test('supports query without column', () {
     expect(
       syncRulesToSyncStreams('''

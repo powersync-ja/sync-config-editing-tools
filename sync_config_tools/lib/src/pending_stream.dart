@@ -190,6 +190,28 @@ final class _ToStreamTranslator extends Transformer<void> {
       return Reference(columnName: e.columnName, entityName: tableName)
         ..columnNameToken = e.columnNameToken
         ..entityNameToken = tableNameToken;
+    } else if (e.entityName == 'token_parameters') {
+      // token_parameters resolves to a nested "parameters" entry in the JWT,
+      // except for token_parameters.user_id, which resolve to the top-level
+      // sub key. This is even more legacy than the old request.jwt() function,
+      // which is handled by visitFunction.
+      if (e.columnName == 'user_id') {
+        return FunctionExpression(
+          schemaName: 'auth',
+          name: 'user_id',
+          parameters: ExprFunctionParameters(),
+        );
+      } else {
+        return BinaryExpression(
+          FunctionExpression(
+            schemaName: 'auth',
+            name: 'parameters',
+            parameters: ExprFunctionParameters(),
+          ),
+          Token(TokenType.dashRangleRangle, e.span!),
+          StringLiteral('\$.parameters.${e.columnName}'),
+        );
+      }
     }
 
     return e;

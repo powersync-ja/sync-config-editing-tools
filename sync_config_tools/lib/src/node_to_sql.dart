@@ -37,7 +37,8 @@ final class FixedNodeToSql extends NodeSqlBuilder {
       name: 'parameters',
       schemaName: final schema?,
     )) {
-      if (e.right case final StringLiteral right) {
+      if (e.right case final StringLiteral right
+          when !right.value.contains('.')) {
         return super.visitFunction(
           FunctionExpression(
             name: 'parameter',
